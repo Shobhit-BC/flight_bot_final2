@@ -1,0 +1,6 @@
+python-dateutil
+Flask
+openai
+streamlit
+requests
+pymongo
