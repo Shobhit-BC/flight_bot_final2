@@ -20,14 +20,14 @@ for message in st.session_state.messages:
 cnt=0
 # React to user input
 if prompt := st.chat_input("Hii dbot here to code"):
-    # logging.exception("Trying_sentry1")
 
     st.chat_message("user").markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
     last2=st.session_state.messages[-2:]
-    # non_mandatory_json={}
+    #calling middle api
     response=hit(prompt,st.session_state.session_id)
-    print(response)
+    
+    #extracting all the data from json recieved from middle api(proceesed reponse from akshay api)
     json_obj = json.loads(response)
     assis=json_obj["response"]
     st.chat_message("assistant").markdown(assis)
