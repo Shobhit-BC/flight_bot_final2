@@ -56,7 +56,7 @@ def extract_dictionary_from_string(s):
     return dictionary_string
 def extract_resp(s):
     if(s.find('Here is your updated JSON:')!=-1):
-      start_index = s.find('Here is your updated JSON:')
+      start_index = s.find('Here is your')
       end_index = s.rfind('}') + 1
       dictionary_string1 = s[0:start_index] 
       dictionary_string2=s[end_index:]
@@ -81,38 +81,24 @@ def mand_prompt(extracted_mandatory_json):
   
 
   - To accomplish this task, follow the following steps sequentially:
+  - Make sure you already provide a json.
 
   
 
   ```
-
-  Step 1: Analyze the user input and extract features for the keys mentioned in ```{extracted_mandatory_json}``` and update it in ```{extracted_mandatory_json}```.\
-
   
+  Step 1: Check for keys with missing values in ```{extracted_mandatory_json}``` and ask the user for that value. \
 
-  Step 1: Next, check for keys with missing values in ```{extracted_mandatory_json}``` and ask the user for that value. \
+  Step 2: Next, analyze the user input and extract features for the keys mentioned in ```{extracted_mandatory_json}``` and update it in ```{extracted_mandatory_json}```.\
 
-  
-
-  Step 2: Respond the user with query to provide the value for keys having missing values in ```{extracted_mandatory_json}```\
-
+  Step 3: Respond the user with query to provide the value for keys having missing values in ```{extracted_mandatory_json}```\
   Along with the query also provide this updated JSON. \
 
-  
+  Step 4: From the user input extract the features required to fill the corresponding values of ```{extracted_mandatory_json}```, and update the JSON with information provided by user.\
 
-  Step 3: From the user input extract the features required to fill the corresponding values of ```{extracted_mandatory_json}```, and update the JSON with information provided by user.\
-
-  
-
-  Step 4: Again check the updated JSON for missing values and respond with the query to ask for value of remaining keys, along with the updated JSON.\
-
-  
+  Step 5: Again check the updated JSON for missing values and respond with the query to ask for value of remaining keys, along with the updated JSON.\
 
   ```
-
-  
-
-  - Repeat the above steps until all the values of JSON are filled. Once all the values of JSON are filled, your task is done.\
 
   
 
@@ -200,6 +186,97 @@ def mand_prompt(extracted_mandatory_json):
 
   ```
 
+  <User>: Book a flight 
+
+  
+
+  <Flight Booking Assistant>: Sure, I can assist you with that. Could you please provide me with the following information:
+
+  1. Departure city?
+
+  2. Destination city?
+
+  3. Travel date?
+
+  
+
+  Here is your updated JSON:
+
+  {{
+
+    "Departure City": "",
+
+    "Destination City": "",
+
+    "Travel Date": ""
+
+  }}
+
+  
+  <User>: From bangkok
+
+  
+
+  <Flight Booking Assistant>: Sure, I can assist you with that. Could you please provide me with the following information:
+
+  1. Destination city?
+
+  2. Travel date? 
+  
+  Here is your updated information:
+
+  {{
+
+    "Departure City": "Bangkok",
+
+    "Destination City": "",
+
+    "Travel Date": ""
+
+  }}
+
+  <User>: To goa
+
+  <Flight Booking Assistant>: Sure, I can assist you with that. Could you please provide me with the following information:
+
+  1. Travel date? 
+  
+  Here is your updated information:
+
+  {{
+
+    "Departure City": "Bangkok",
+
+    "Destination City": "Goa",
+
+    "Travel Date": ""
+
+  }}
+
+  <User>: on 25 dec
+
+  <Flight Booking Assistant>: Thank you for providing the information. 
+
+  Here is your updated JSON:
+
+  {{
+
+    "Departure City": "Bangkok",
+
+    "Destination City": "Goa",
+
+    "Travel Date": "2023-12-25"
+
+  }}
+
+
+
+  ```
+
+  example-3:
+
+  ```
+
   <User>: Book a flight to Delhi for tomorrow
 
   
@@ -207,9 +284,6 @@ def mand_prompt(extracted_mandatory_json):
   <Flight Booking Assistant>: Sure, I can assist you with that. Could you please provide me with the following information:
 
   
-
-  1. Departure city
-
   
 
   Here is your updated JSON:
@@ -248,7 +322,7 @@ def mand_prompt(extracted_mandatory_json):
 
   ```
 
-  example-3:
+  example-4:
 
   ```
 
@@ -274,246 +348,22 @@ def mand_prompt(extracted_mandatory_json):
 
   
 
-  - Strictly avoid the following manner of conversation, you must analyze the user input carefully and update ```{extracted_mandatory_json}``` before asking user for further information:
-
-  
-
-  ```
-
-  <User>: Book a flight from Delhi to Mumbai for 11th December
-
-  
-
-  <Flight Booking Assistant>: Sure, I can assist you with that. Could you please provide me with the following information:
-
-  
-
-  1. Departure city?
-
-  
-
-  Here is your updated JSON:
-
-  {{
-
-    "Departure City": "",
-
-    "Destination City": "Mumbai",
-
-    "Travel Date": "2023-12-11"
-
-  }}
-
-  
-
-  <User>: Already provided
-
-  
-
-  <Flight Booking Assistant>: Apologies for the confusion. Let's proceed with your flight booking.
-
-  
-
-  Here is your updated information:
-
-  {{
-
-    "Departure City": "Delhi",
-
-    "Destination City": "Mumbai",
-
-    "Travel Date": "2023-12-11"
-
-  }}
-
-  ```
-
-  It's clearly understandable that user already provided Delhi as Departure city in the very first message, still you failed to extract that and asked it again from user. It must be strictly avoided. Do the feature extraction properly, focus on user input.\
-
+  If you have all the details already present in {extracted_mandatory_json} then just thank the user.
   
 
   '''
 
   return additional_instructions
 
-def non_mand_prompt():
-  instructions_non_mand = '''As a Flight Booking Assistant, your main job is to help users with flight bookings. Follow these guidelines when responding to user queries:
+def non_mand_prompt(non_mandatory_extracted_json):
+  instructions_non_mand = f'''
+  - As a Flight Booking Assistant, your only job is to extract the key features mentioned in ```{non_mandatory_extracted_json}```  from user input and update in ```{non_mandatory_extracted_json}``` and return the updated JSON to user.
 
-  
+  - Never ask anything from the user. Only return the updated JSON every time.
 
-  Rule -1: Focus on Flight Booking: Your primary role is to assist with flight booking and flight-related queries. Ignore any non-flight-related questions and do not respond to them.
+  - In ```{non_mandatory_extracted_json}```, for keys with no value, just return ```{""}``` value for that key, don't use any default value.
 
-  
-
-  Rule -2: Extract Specific Information: If the user provides any of the following details, extract and return them in JSON format:
-
-  
-
-  Class: Economy/Premium Economy/Business/First class
-
-  Trip type: One-way/Round trip
-
-  Number of stops: 0/1/2
-
-  Airlines: Air India/AirAsia India/IndiGo/SpiceJet/Vistara
-
-  Price range: (minimum price is 2,000)
-
-  Refundable: True/False
-
-  Number of passengers
-
-  
-
-  Rule -3: Ignore Other Information: Only focus on the 6 pieces of information mentioned above. Ignore all other details, including departure city, destination city, and travel date.
-
-  
-
-  Rule -4: JSON Response Format: Return extracted details in JSON format. Include only the keys with corresponding values. Do not include keys without values.
-
-  
-
-  Rule -5: Multiple Message Handling: If a user provides any of the above details in a previous message, keep that information in mind for subsequent messages. Even if the user doesn't provide any new information, continue to include the details from prior messages in the JSON response.
-
-  
-
-  Rule -6: No User Prompts: Do not prompt the user for additional information. Only respond based on the user's input.
-
-  
-
-  Rule -7: Example Conversations: Here are some examples of how to respond to user queries and extract information:
-
-  
-
-  Hello, How can I help you ?
-
-  user: Book a economy class flight to Delhi
-
-  Assistant: {
-
-    "Class": "Economy"
-
-  }
-
-  user: Mumbai, 9th June
-
-  Assistant: {
-
-    "Class": "Economy"
-
-  }
-
-  user: Bye
-
-  Have a happy and calm Journey!
-
-  
-
-  example-1:
-
-  Hello, How can I help you ?
-
-  user: book a first class ticket to delhi
-
-  Assistant: {
-
-    "Class": "first class"
-
-  }
-
-  user: Mumbai, 9th November, Vistara Airlines
-
-  Assistant: {
-
-    "Class": "first class",
-
-    "Airlines": "Vistara"
-
-  }
-
-  user: bye
-
-  
-
-  example-2:
-
-  Hello, How can I help you ?
-
-  user: Book a flight from Delhi
-
-  Assistant: { }
-
-  user: Mumbai, economy class
-
-  Assistant: {
-
-    "Class": "economy"
-
-  }
-
-  You: Coming sunday
-
-  Assistant: {
-
-    "Class": "economy"
-
-  }
-
-  user: Bye
-
-  
-
-  example-3:
-
-  Hello, How can I help you ?
-
-  user: book a business class ticket to goa
-
-  Assistant: {
-
-    "Class": "Business"
-
-  }
-
-  user: mumbai on 10th september
-
-  Assistant: {
-
-    "Class": "Business"
-
-  }
-
-  user: bye
-
-  
-
-  example-4:
-
-  Hello, How can I help you ?
-
-  user: Goa to London
-
-  Assistant: { }
-
-  user: business class, 9th November
-
-  Assistant: {
-
-    "Class": "business"
-
-  }
-
-  user: bye
-
-  
-
-  Rule -8: No Default Values: Extract information only from user input; do not ever use any default value for any key or information.
-
-  
-
-  Rule -9: Clear JSON: Return extracted information only in JSON format with proper key-value pairs. Do not include keys with blank or None values.
-
-  
+  - Never miss responding with the updated JSON, don't loose values for the already provided json.
 
   '''
 
@@ -570,70 +420,63 @@ def main(user_input,last2,mandatory_extracted_json,non_mandatory_extracted_json,
         "response":greetings_bot_response,
         "session_id":session_id,
         "mandatory_extracted_json":mandatory_extracted_json,
-        "non_mandatory_extracted_json":non_mandatory_extracted_json
+        "non_mandatory_extracted_json":non_mandatory_extracted_json,
+        "greet":True
+
         })
+  
 
   else:
-      print("flight")
-      conversation1 = [{"role": "system", "content": non_mand_prompt()}]
-      conversation = [{"role": "assistant", "content": flight_booking_prompt},{"role": "system", "content": mand_prompt(mandatory_extracted_json)}]
+    print("flight")
+    conversation1 = [{"role": "system", "content": non_mand_prompt(non_mandatory_extracted_json)}]
+    conversation = [{"role": "system", "content": flight_booking_prompt},{"role": "system", "content": mand_prompt(mandatory_extracted_json)}]
 
-      travel_date = None
+    travel_date = None
 
-      if travel_date == None:
+    if travel_date == None:
 
-          travel_date = get_travel_date(user_input)
+      travel_date = get_travel_date(user_input)
 
-      if travel_date:
+    if travel_date:
 
-          conversation.append({"role": "user", "content": user_input + " (Travel Date: " + travel_date + ")"})
+      conversation.append({"role": "user", "content": user_input + f"Travel Date: {travel_date}"})
 
-      else:
+    else:
 
-          conversation.append({"role": "user", "content": user_input})
+      conversation.append({"role": "user", "content": user_input})
 
-
-
-      if travel_date == None:
-
-          prompt = flight_booking_prompt + "\nUser: " + user_input
-
-      else:
-
-          prompt = flight_booking_prompt + "\nUser: " + user_input + 'this is the scheduled date for departure:' + travel_date
-
-      bot_response = chat_with_flight_booking_bot(conversation + last2+[{"role": "user", "content": prompt}])
-      bot_response1 = chat_with_bot_non_mandatory(conversation1 +[{"role": "user", "content": user_input}])
-      print(f"bot_response1:{bot_response1}")
-      print(f"bot_response:{bot_response}")
+    bot_response = chat_with_flight_booking_bot(conversation)
+    bot_response1 = chat_with_bot_non_mandatory(conversation1 +[{"role": "user", "content": user_input}])
 
 
-      if "{" and "}" in bot_response:
-        print(f"extraced_json:{bot_response}")
-        extracted_json = (extract_dictionary_from_string(bot_response))
-        valid_json_string2 = extracted_json.replace("'", "\"")
-        extracted_json_mandatory = json.loads(valid_json_string2)
-        response=extract_resp(bot_response)
-      else:
-         extracted_json_mandatory="JSON Not Found"
-         response="Not Found"
-      if "{" and "}" in bot_response1:
-        print(f"extraced_josn_nmand:{bot_response1}")
-        valid_json_string = bot_response1.replace("'", "\"")
-        extracted_json_nonmandatory = json.loads(valid_json_string)
-      else:
-         extracted_json_nonmandatory="JSON Not Found"
-         print("nomand_Json_NF")
+    if "{" and "}" in bot_response:
+      print(f"extraced_json:{bot_response}")
+      extracted_json = (extract_dictionary_from_string(bot_response))
+      valid_json_string2 = extracted_json.replace("'", "\"")
+      extracted_json_mandatory = json.loads(valid_json_string2)
+      response=extract_resp(bot_response)
+    else:
+      extracted_json_mandatory=mandatory_extracted_json
+      response=extract_resp(bot_response)
+    if "{" and "}" in bot_response1:
+      print(f"extraced_josn_nmand:{bot_response1}")
+      valid_json_string = bot_response1.replace("'", "\"")
+      extracted_json_nonmandatory = json.loads(valid_json_string)
+
+    else:
+      extracted_json_nonmandatory=non_mandatory_extracted_json
+      print("nomand_Json_NF")
 
 
-      return (
-        {
-        "response":response,
-        "session_id":session_id,
-        "mandatory_extracted_json":extracted_json_mandatory,
-        "non_mandatory_extracted_json":extracted_json_nonmandatory
-        }
-      )
+    return (
+      {
+      "response":response,
+      "session_id":session_id,
+      "mandatory_extracted_json":extracted_json_mandatory,
+      "non_mandatory_extracted_json":extracted_json_nonmandatory,
+      "greet":False
+      }
+    )
 
  
 
@@ -649,32 +492,13 @@ def index():
       data = json.loads(request.data)
       session_id=data['session_id']
       user_input= data['prompt']
-      # i=db_ses_fetch(session_id)
-      # bd_ses_append_user(session_id,user_input)
+
       last2=data['last2']
       mandatory_extracted_json=data['mandatory_extracted_json']
       non_mandatory_extracted_json=data['non_mandatory_extracted_json']
       print(f"non_mandatory_extracted_json: {non_mandatory_extracted_json}") 
       print(f"last2: {last2}") 
 
-    else:
-      user_input= request.form['prompt']
-      session_id="test"
-      extracted_json={
-            "Departure City":"",
-            "Destination City": "",
-            "Travel Date": ""
-            }
-      last2=[
-        {
-            "content": "book a flight",
-            "role": "user"
-        },
-        {
-            "content": "Sure, I can assist you with that. Please provide me with the following details:\n\n1. Departure City\n2. Destination City\n3. Travel Date",
-            "role": "assistant"
-        }
-      ]
     return main(user_input,last2,mandatory_extracted_json,non_mandatory_extracted_json,session_id)
   return render_template("index.html")
 

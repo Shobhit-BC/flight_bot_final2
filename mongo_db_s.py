@@ -1,9 +1,8 @@
 from pymongo import MongoClient
 client = MongoClient("localhost", 27017)
  
-# collections = db.list_collection_names()
-
-def db_ses_response(mandatory_json,non_mandatory_json,history,user_id):
+# used to store bot response in chat history and json in database
+def db_ses_response(mandatory_json,non_mandatory_json,bot_response,user_id):
     db = client["Try"]
     chat_history_co = db["user_data"]
     doc_json = chat_history_co.find_one({"_id": user_id})
@@ -13,7 +12,7 @@ def db_ses_response(mandatory_json,non_mandatory_json,history,user_id):
 
         "$push": {
 
-            "conversation": {"role": "assistant", "content": history}
+            "conversation": {"role": "assistant", "content": bot_response}
 
         }
 
@@ -44,11 +43,11 @@ def db_ses_response(mandatory_json,non_mandatory_json,history,user_id):
 
         return "done"
 
+# used to store bot user-prompt in chat history and database
 def bd_ses_append_user(user_id,prompt):
     db = client["Try"]
     chat_history_co = db["user_data"]
     doc_chat = chat_history_co.find_one({"_id": user_id})
-    # existing_doc = chat_history_co.find_one({"_id": user_id})
     if doc_chat:
         query = {"_id": user_id}  
 
@@ -75,17 +74,16 @@ def bd_ses_append_user(user_id,prompt):
 
         return "done"    
 
+# extracting details from database
 def db_ses_fetch(user_id):
     db = client["Try"] 
-    # mandatory_json_co = db["mandatory_json"]
     chat_history_co = db["user_data"]
     doc_chat = chat_history_co.find_one({"_id": user_id})
-    # existing_doc = chat_history_co.find_one({"_id": user_id})
     if doc_chat:
         mandatory_json_fetched = doc_chat.get('mandatory_json')
         extracted_non_mandatory_json=doc_chat.get('non_mandatory_json')
         entry = doc_chat.get('conversation')
-        last2=  (entry[-2:])
+        last2=  (entry[-1:])
         print(type(last2))
         return mandatory_json_fetched,last2,extracted_non_mandatory_json
 
